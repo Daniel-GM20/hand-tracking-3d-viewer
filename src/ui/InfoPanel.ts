@@ -16,9 +16,11 @@ export class InfoPanel {
     this.titleEl.textContent = (mesh.name || 'PIEZA SIN NOMBRE').toUpperCase();
     this.bodyEl.innerHTML = '';
 
+    // 'name' se omite: duplica el título (lo agrega el pipeline glTF).
     const entries = Object.entries(mesh.userData).filter(
-      ([, v]) =>
-        typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean',
+      ([k, v]) =>
+        k !== 'name' &&
+        (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'),
     );
 
     if (entries.length === 0) {

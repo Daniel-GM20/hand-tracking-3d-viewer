@@ -1,0 +1,455 @@
+/* ===== J.A.R.V.I.S HUB — glassmorphism ===== */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --glass-blur: blur(18px) saturate(160%);
+  --accent: #6ee7ff;
+  --accent-warm: #ffc14d;
+  --text: #dff4ff;
+  --text-dim: #8fb3c7;
+}
+
+html, body { width: 100%; height: 100%; overflow: hidden; background: #060a14; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+}
+
+/* Blobs de fondo para que el vidrio tenga algo que difuminar */
+#bg-blobs { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  animation: blobFloat 18s ease-in-out infinite alternate;
+}
+.blob.b1 { width: 45vw; height: 45vw; left: -10vw; top: -15vh; background: #0b4a7a; }
+.blob.b2 { width: 38vw; height: 38vw; right: -8vw; top: 30vh; background: #124a5e; animation-delay: -6s; }
+.blob.b3 { width: 30vw; height: 30vw; left: 30vw; bottom: -18vh; background: #3b1e66; animation-delay: -12s; }
+@keyframes blobFloat {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(4vw, -4vh) scale(1.15); }
+}
+
+/* Clase base de vidrio */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ===== Menú de cards ===== */
+#menu {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px;
+}
+#menu.hidden { display: none; }
+
+#menu .hub-title {
+  text-align: center;
+}
+#menu .hub-title h1 {
+  font-size: 34px;
+  letter-spacing: 10px;
+  font-weight: 600;
+  color: var(--text);
+  text-shadow: 0 0 24px rgba(110, 231, 255, 0.5);
+}
+#menu .hub-title p {
+  margin-top: 10px;
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: var(--text-dim);
+}
+
+#menu .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 280px));
+  gap: 24px;
+  justify-content: center;
+  max-width: 1300px;
+}
+
+.card {
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.10), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+.card:hover::before { left: 120%; }
+.card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(110, 231, 255, 0.55);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(110, 231, 255, 0.18);
+}
+.card.disabled { cursor: default; opacity: 0.55; }
+.card.disabled:hover { transform: none; border-color: var(--glass-border); box-shadow: var(--glass-shadow); }
+
+.card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #04121f;
+  background: linear-gradient(135deg, var(--accent), #2b9fd8);
+  box-shadow: 0 0 18px rgba(110, 231, 255, 0.45);
+  margin-bottom: 18px;
+}
+.card[data-app='whiteboard'] .card-icon { background: linear-gradient(135deg, #ff9de2, #c26bff); box-shadow: 0 0 18px rgba(194, 107, 255, 0.45); }
+.card[data-app='lego'] .card-icon { background: linear-gradient(135deg, #ffd34d, #ff8a3d); box-shadow: 0 0 18px rgba(255, 176, 61, 0.45); }
+.card[data-app='memes'] .card-icon { background: linear-gradient(135deg, #7dffa8, #2bd88f); box-shadow: 0 0 18px rgba(77, 255, 168, 0.45); }
+
+.card h3 { font-size: 16px; letter-spacing: 3px; margin-bottom: 8px; }
+.card p { font-size: 12.5px; line-height: 1.55; color: var(--text-dim); letter-spacing: 0.5px; }
+.card .card-tag {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent);
+}
+.card.disabled .card-tag { color: var(--accent-warm); border-color: rgba(255, 193, 77, 0.4); }
+
+/* ===== Shell: botón volver + contenedor de app ===== */
+#back-btn {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 9px 22px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#back-btn:hover { border-color: rgba(110, 231, 255, 0.6); box-shadow: 0 0 16px rgba(110, 231, 255, 0.25); }
+#back-btn[hidden] { display: none; }
+
+#app-container { position: fixed; inset: 0; z-index: 10; }
+#app-container:empty { display: none; }
+.miniapp { position: absolute; inset: 0; }
+.miniapp canvas.scene { position: absolute; inset: 0; display: block; }
+
+/* ===== Componentes compartidos entre apps ===== */
+.video-preview {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 240px;
+  height: 180px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: var(--glass-shadow);
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  transform: scaleX(-1);
+}
+
+.hud {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
+}
+.hud .panel { padding: 14px 18px; min-width: 260px; }
+.hud h1 {
+  font-size: 13px;
+  letter-spacing: 3px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(110, 231, 255, 0.6);
+}
+.hud .row { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin: 4px 0; letter-spacing: 1px; color: var(--text-dim); }
+.hud .value { color: var(--text); }
+.hud .value.ok { color: #4dffb8; text-shadow: 0 0 6px rgba(77, 255, 184, 0.6); }
+.hud .value.active { color: var(--accent-warm); text-shadow: 0 0 6px rgba(255, 211, 77, 0.6); }
+
+.status-message {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  padding: 18px 26px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  display: none;
+  text-align: center;
+  max-width: 440px;
+}
+.status-message.visible { display: block; }
+
+.laser-cursor {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.9), inset 0 0 6px rgba(0, 212, 255, 0.6);
+  pointer-events: none;
+  z-index: 30;
+  display: none;
+}
+.laser-cursor.visible { display: block; }
+
+/* ===== App: Exploded View ===== */
+#explosion-bar {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 120, 180, 0.25);
+  overflow: hidden;
+}
+#explosion-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00c8ff, #6ee7ff);
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.8);
+  transition: width 60ms linear;
+}
+#explosion-label { font-size: 10px; margin-top: 4px; letter-spacing: 2px; color: var(--text-dim); }
+
+#model-picker {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#model-picker select, #model-picker button {
+  background: rgba(10, 20, 34, 0.6);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+}
+#model-picker select:hover, #model-picker button:hover {
+  border-color: rgba(110, 231, 255, 0.6);
+  box-shadow: 0 0 12px rgba(0, 200, 255, 0.3);
+}
+
+#drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 40, 70, 0.45);
+  backdrop-filter: blur(4px);
+  border: 2px dashed rgba(110, 231, 255, 0.7);
+  font-size: 20px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  pointer-events: none;
+}
+#drop-overlay.visible { display: flex; }
+
+#info-panel {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 15;
+  width: 300px;
+  padding: 16px 20px;
+  border-color: rgba(255, 193, 77, 0.45);
+  display: none;
+}
+#info-panel.visible { display: block; }
+#info-panel h2 {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--accent-warm);
+  text-shadow: 0 0 8px rgba(255, 193, 77, 0.6);
+  margin-bottom: 10px;
+  word-break: break-all;
+}
+#info-panel .info-row { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; margin: 5px 0; letter-spacing: 1px; }
+#info-panel .info-key { color: var(--text-dim); flex-shrink: 0; }
+#info-panel .info-value { color: var(--text); text-align: right; word-break: break-word; }
+#info-panel .info-empty { font-size: 11px; letter-spacing: 2px; color: #7a8fa0; text-align: center; padding: 8px 0; }
+
+/* ===== App: Pizarra ===== */
+#draw-canvas { position: absolute; inset: 0; z-index: 1; cursor: none; }
+
+/* Rueda radial de colores (gesto tri-pinch) */
+#color-wheel {
+  position: absolute;
+  width: 290px;
+  height: 290px;
+  margin: -145px 0 0 -145px;
+  border-radius: 50%;
+  z-index: 40;
+  display: none;
+  pointer-events: none;
+}
+#color-wheel.visible { display: block; animation: wheelIn 0.18s ease; }
+@keyframes wheelIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.wheel-item {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+}
+.wheel-item.hovered {
+  transform: scale(1.35);
+  border-color: #fff;
+  box-shadow: 0 0 18px currentColor, 0 0 8px rgba(255, 255, 255, 0.6);
+}
+.wheel-item.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--text);
+  background: rgba(20, 30, 44, 0.85);
+}
+.wheel-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-align: center;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.wheel-center.active {
+  border-color: #fff;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.draw-cursor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 30;
+  display: none;
+  box-shadow: 0 0 10px currentColor;
+}
+.draw-cursor.visible { display: block; }
+
+.eraser-cursor {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 30;
+  display: none;
+  background: rgba(255, 255, 255, 0.08);
+}
+.eraser-cursor.visible { display: block; }
+
+/* ===== App: LEGO ===== */
+#brick-palette {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 12;
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  max-width: calc(100vw - 320px);
+  overflow-x: auto;
+}
+.brick-item {
+  min-width: 58px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.brick-item.hovered { transform: scale(1.12); border-color: #fff; box-shadow: 0 0 14px rgba(255, 255, 255, 0.4); }
+.brick-item.selected { border-color: var(--accent); box-shadow: 0 0 14px rgba(110, 231, 255, 0.5); }
+.brick-chip { width: 34px; height: 20px; border-radius: 4px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25); }
+.brick-item span { font-size: 10px; letter-spacing: 1px; color: var(--text-dim); }
+
+/* Leyenda de gestos (pizarra y lego) */
+.gesture-help {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 11;
+  padding: 14px 18px;
+  max-width: 280px;
+}
+.gesture-help h2 { font-size: 11px; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
+.gesture-help div { font-size: 11px; letter-spacing: 0.5px; color: var(--text-dim); margin: 4px 0; line-height: 1.45; }
+.gesture-help b { color: var(--text); font-weight: 600; }

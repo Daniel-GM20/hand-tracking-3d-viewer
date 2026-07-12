@@ -69,8 +69,19 @@ export class SceneManager {
     this.composer.addPass(bloom);
     this.composer.addPass(new OutputPass());
 
-    window.addEventListener('resize', () => this.onResize());
+    window.addEventListener('resize', this.handleResize);
     this.renderer.setAnimationLoop(() => this.tick());
+  }
+
+  private handleResize = (): void => this.onResize();
+
+  /** Limpieza al desmontar la mini-app. */
+  dispose(): void {
+    window.removeEventListener('resize', this.handleResize);
+    this.renderer.setAnimationLoop(null);
+    this.composer.dispose();
+    this.controls.dispose();
+    this.renderer.dispose();
   }
 
   onUpdate(cb: (dt: number) => void): void {

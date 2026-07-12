@@ -15,6 +15,7 @@ export class ModelPicker {
   private fileBtn = document.getElementById('load-file-btn') as HTMLButtonElement;
   private fileInput = document.getElementById('file-input') as HTMLInputElement;
   private dropOverlay = document.getElementById('drop-overlay') as HTMLElement;
+  private abort = new AbortController();
 
   constructor(
     private samples: SampleModel[],
@@ -39,19 +40,20 @@ export class ModelPicker {
       this.fileInput.value = '';
     });
 
-    // Drag & drop
+    // Drag & drop (con AbortController para poder limpiar al desmontar)
+    const signal = this.abort.signal;
     let dragCount = 0;
     window.addEventListener('dragenter', (e) => {
       e.preventDefault();
       dragCount++;
       this.dropOverlay.classList.add('visible');
-    });
+    }, { signal });
     window.addEventListener('dragleave', (e) => {
       e.preventDefault();
       dragCount = Math.max(0, dragCount - 1);
       if (dragCount === 0) this.dropOverlay.classList.remove('visible');
-    });
-    window.addEventListener('dragover', (e) => e.preventDefault());
+    }, { signal });
+    window.addEventListener('dragover', (e) => e.preventDefault(), { signal });
     window.addEventListener('drop', (e) => {
       e.preventDefault();
       dragCount = 0;
@@ -60,7 +62,12 @@ export class ModelPicker {
       if (file && /\.(glb|gltf)$/i.test(file.name)) {
         this.events.onSelectFile(file);
       }
-    });
+    }, { signal });
+  }
+
+  /** Elimina los listeners globales al desmontar la mini-app. */
+  dispose(): void {
+    this.abort.abort();
   }
 
   /** Marca en el dropdown el modelo activo (p.ej. tras cargar archivo propio). */

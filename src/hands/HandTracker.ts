@@ -33,13 +33,20 @@ export class HandTracker {
   private lastTimestamp = 0;
   private running = false;
 
-  constructor(private video: HTMLVideoElement) {}
+  constructor(readonly video: HTMLVideoElement) {}
 
-  onFrame(cb: FrameListener): void {
+  /** Suscribe un listener; devuelve la función para desuscribirse. */
+  onFrame(cb: FrameListener): () => void {
     this.listeners.push(cb);
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== cb);
+    };
   }
 
+  /** Idempotente: reutiliza el landmarker si ya existe (cambio de app). */
   async start(): Promise<void> {
+    if (this.running) return;
+
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: 640, height: 480, facingMode: 'user' },
       audio: false,
@@ -50,20 +57,24 @@ export class HandTracker {
     });
     await this.video.play();
 
-    const vision = await FilesetResolver.forVisionTasks(
-      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
-    );
-    this.landmarker = await HandLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetPath:
-          'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
-        delegate: 'GPU',
-      },
-      runningMode: 'VIDEO',
-      numHands: 2,
-    });
+    if (!this.landmarker) {
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
+      );
+      this.landmarker = await HandLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+          delegate: 'GPU',
+        },
+        runningMode: 'VIDEO',
+        numHands: 2,
+      });
+    }
 
     this.running = true;
+    this.lastVideoTime = -1;
+    this.smoothers.forEach((s) => s.reset());
     this.scheduleDetection();
   }
 
@@ -112,9 +123,13 @@ export class HandTracker {
     for (const cb of this.listeners) cb(this.latestFrame);
   }
 
+  /** Detiene la cámara (el landmarker se conserva para reutilizarlo). */
   stop(): void {
     this.running = false;
     const stream = this.video.srcObject as MediaStream | null;
     stream?.getTracks().forEach((t) => t.stop());
+    this.video.srcObject = null;
+    this.listeners = [];
+    this.latestFrame = { hands: [], timestamp: 0 };
   }
 }
