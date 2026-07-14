@@ -38,23 +38,36 @@ const TEMPLATE = `
     </div>
   </div>
 
-  <div class="gesture-help glass">
+  <div id="lg-help" class="gesture-help glass">
     <h2>GESTOS</h2>
-    <div><b>Índice</b> a la bandeja + <b>pinch</b> de la otra mano: elegir pieza</div>
-    <div><b>Pinch</b>: mover la pieza fantasma; <b>soltar</b>: colocarla</div>
-    <div><b>Like</b>: rotar pieza 90°</div>
+    <div><b>Índice extendido</b>: posicionar la pieza fantasma</div>
+    <div><b>Índice + pinch de la otra mano</b>: colocar la pieza</div>
+    <div><b>Pinch sin índice</b>: girar la pieza 90°</div>
+    <div><b>Pulgar+índice+medio juntos</b>: abrir/cerrar el catálogo de piezas</div>
     <div><b>Palma abierta</b> 1.5 s: deshacer</div>
+    <div><b>Like con ambas manos</b>: mostrar/ocultar esta ayuda</div>
   </div>
 
-  <div id="brick-palette" class="glass"></div>
+  <button id="open-palette" class="glass">PIEZAS ▤</button>
+
+  <div id="brick-modal" class="glass">
+    <h2>CATÁLOGO DE PIEZAS</h2>
+    <div class="grid"></div>
+    <div class="modal-close" data-action="close">CERRAR ✕</div>
+  </div>
+
   <div id="lg-laser" class="laser-cursor"></div>
   <div id="lg-status" class="status-message glass"></div>
 `;
 
 /**
- * Constructor LEGO beta: elige piezas de la bandeja (apuntar + pinch de la
- * otra mano), arrastra el fantasma con pinch y suéltalo para colocarlo con
- * snap a la rejilla y apilado automático. Like rota, palma 1.5 s deshace.
+ * Constructor LEGO beta, gestos sin colisiones:
+ * - Índice extendido → posiciona la pieza fantasma (snap + apilado).
+ * - Índice + pinch de la OTRA mano → coloca la pieza.
+ * - Pinch sin ningún índice extendido → gira la pieza 90°.
+ * - Tri-pinch → abre/cierra el catálogo modal (índice para apuntar,
+ *   pinch para elegir).
+ * - Palma abierta 1.5 s → deshacer. Doble like → ayuda.
  */
 export class LegoApp implements MiniApp {
   private classifier = new PoseClassifier();
@@ -66,7 +79,6 @@ export class LegoApp implements MiniApp {
   private ghost: THREE.Group | null = null;
   private ghostValid = false;
   private ghostPos = new THREE.Vector3();
-  private wasPinching = false;
 
   private placed: PlacedBrick[] = [];
   private heights = new Map<string, number>();
@@ -74,17 +86,23 @@ export class LegoApp implements MiniApp {
   private raycaster = new THREE.Raycaster();
   private groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-  private selectPinchWas = false;
-  private hoveredItem: HTMLElement | null = null;
-  private likeWas = false;
+  // Latches de gestos
+  private anyPinchWas = false;
+  private triWas = false;
+  private bothLikeWas = false;
   private palmStart = 0;
   private undoFired = false;
+
+  private modalOpen = false;
+  private hoveredItem: HTMLElement | null = null;
 
   private modeEl!: HTMLElement;
   private handsEl!: HTMLElement;
   private brickEl!: HTMLElement;
   private countEl!: HTMLElement;
   private laser!: HTMLElement;
+  private modalEl!: HTMLElement;
+  private helpEl!: HTMLElement;
 
   async mount(container: HTMLElement): Promise<void> {
     const root = document.createElement('div');
@@ -97,6 +115,9 @@ export class LegoApp implements MiniApp {
     this.brickEl = document.getElementById('lg-brick')!;
     this.countEl = document.getElementById('lg-count')!;
     this.laser = document.getElementById('lg-laser')!;
+    this.modalEl = document.getElementById('brick-modal')!;
+    this.helpEl = document.getElementById('lg-help')!;
+    if (window.innerWidth <= 600) this.helpEl.classList.add('hidden');
 
     const canvas = document.getElementById('lego-canvas') as HTMLCanvasElement;
     this.sceneManager = new SceneManager(canvas);
@@ -117,7 +138,10 @@ export class LegoApp implements MiniApp {
     base.position.y = -0.075;
     this.sceneManager.scene.add(base);
 
-    this.buildPalette();
+    this.buildModal();
+    document
+      .getElementById('open-palette')!
+      .addEventListener('click', () => this.toggleModal());
     this.setBrick(this.currentDef);
 
     const tracker = getHandTracker();
@@ -150,10 +174,10 @@ export class LegoApp implements MiniApp {
     this.sceneManager.dispose();
   }
 
-  // --- Paleta ---
+  // --- Catálogo modal ---
 
-  private buildPalette(): void {
-    const bar = document.getElementById('brick-palette')!;
+  private buildModal(): void {
+    const grid = this.modalEl.querySelector('.grid')!;
     for (const def of BRICK_CATALOG) {
       const item = document.createElement('div');
       item.className = 'brick-item';
@@ -164,16 +188,38 @@ export class LegoApp implements MiniApp {
       const label = document.createElement('span');
       label.textContent = def.label;
       item.append(chip, label);
-      item.addEventListener('click', () => this.setBrick(def));
-      bar.appendChild(item);
+      item.addEventListener('click', () => {
+        this.setBrick(def);
+        this.closeModal();
+      });
+      grid.appendChild(item);
     }
+    this.modalEl
+      .querySelector('.modal-close')!
+      .addEventListener('click', () => this.closeModal());
+  }
+
+  private toggleModal(): void {
+    if (this.modalOpen) this.closeModal();
+    else {
+      this.modalOpen = true;
+      this.modalEl.classList.add('visible');
+      this.hideGhost();
+    }
+  }
+
+  private closeModal(): void {
+    this.modalOpen = false;
+    this.modalEl.classList.remove('visible');
+    this.updateHover(-1, -1);
+    this.laser.classList.remove('visible');
   }
 
   private setBrick(def: BrickDef): void {
     this.currentDef = def;
     this.rotated = false;
     this.brickEl.textContent = `${def.kind === 'plate' ? 'PLACA' : 'LADRILLO'} ${def.label}`;
-    document.querySelectorAll('#brick-palette .brick-item').forEach((el) => {
+    document.querySelectorAll('#brick-modal .brick-item').forEach((el) => {
       el.classList.toggle('selected', (el as HTMLElement).dataset.brick === def.id);
     });
     this.rebuildGhost();
@@ -205,20 +251,55 @@ export class LegoApp implements MiniApp {
     if (!seen.has('Left')) this.classifier.resetSlot('Left');
     if (!seen.has('Right')) this.classifier.resetSlot('Right');
 
+    // Doble like → ayuda.
+    const bothLike = poses.length === 2 && poses.every((p) => p.like);
+    if (bothLike && !this.bothLikeWas) this.helpEl.classList.toggle('hidden');
+    this.bothLikeWas = bothLike;
+
+    // Tri-pinch (flanco) → abrir/cerrar catálogo.
+    const triNow = poses.some((p) => p.triPinch);
+    if (triNow && !this.triWas) this.toggleModal();
+    this.triWas = triNow;
+
     const pointer = poses.find((p) => p.pointing);
-    const pincher = poses.find((p) => p.pinch);
-    const like = poses.some((p) => p.like);
-    const palm = poses.length === 1 && poses[0].openPalm;
+    // El pinch de una mano en tri-pinch no cuenta como pinch de acción.
+    const anyPinch = poses.some((p) => p.pinch && !p.triPinch);
+    const pinchRising = anyPinch && !this.anyPinchWas;
+    this.anyPinchWas = anyPinch;
 
-    // Rotación con like (flanco de subida).
-    if (like && !this.likeWas) {
-      this.rotated = !this.rotated;
-      this.rebuildGhost();
-      this.setMode('ROTAR 90°');
+    // --- Catálogo abierto: modal (índice apunta, pinch elige) ---
+    if (this.modalOpen) {
+      if (pointer) {
+        const sx = (1 - pointer.indexTip.x) * window.innerWidth;
+        const sy = pointer.indexTip.y * window.innerHeight;
+        this.laser.style.left = `${sx}px`;
+        this.laser.style.top = `${sy}px`;
+        this.laser.classList.add('visible');
+        this.updateHover(sx, sy);
+      } else {
+        this.laser.classList.remove('visible');
+      }
+      if (pinchRising && this.hoveredItem) {
+        if (this.hoveredItem.dataset.action === 'close') {
+          this.closeModal();
+        } else {
+          const def = BRICK_CATALOG.find(
+            (b) => b.id === this.hoveredItem!.dataset.brick,
+          );
+          if (def) {
+            this.setBrick(def);
+            this.closeModal();
+          }
+        }
+      }
+      this.setMode('CATÁLOGO');
+      this.hideGhost();
+      this.palmStart = 0;
+      return;
     }
-    this.likeWas = like;
 
-    // Deshacer con palma sostenida.
+    // --- Deshacer con palma sostenida (una sola mano) ---
+    const palm = poses.length === 1 && poses[0].openPalm;
     if (palm) {
       if (this.palmStart === 0) this.palmStart = frame.timestamp;
       const elapsed = frame.timestamp - this.palmStart;
@@ -234,43 +315,26 @@ export class LegoApp implements MiniApp {
       this.undoFired = false;
     }
 
+    // --- Posicionar con el índice ---
     if (pointer) {
-      // Prioridad al apuntado: el pinch de la otra mano selecciona pieza,
-      // nunca arrastra el fantasma.
-      // Apuntar a la bandeja + pinch de la otra mano.
-      const sx = (1 - pointer.indexTip.x) * window.innerWidth;
-      const sy = pointer.indexTip.y * window.innerHeight;
-      this.laser.style.left = `${sx}px`;
-      this.laser.style.top = `${sy}px`;
-      this.laser.classList.add('visible');
-      this.updateHover(sx, sy);
-
-      const other = poses.find((p) => p !== pointer);
-      const otherPinch = other?.pinch ?? false;
-      if (otherPinch && !this.selectPinchWas && this.hoveredItem) {
-        const def = BRICK_CATALOG.find(
-          (b) => b.id === this.hoveredItem!.dataset.brick,
-        );
-        if (def) this.setBrick(def);
-      }
-      this.selectPinchWas = otherPinch;
-      this.setMode('ELIGIENDO PIEZA');
-      this.hideGhost();
-      this.wasPinching = false;
-    } else if (pincher) {
-      // Arrastrar el fantasma; al soltar se coloca.
-      this.laser.classList.remove('visible');
-      this.updateGhost(pincher.pinchPoint.x, pincher.pinchPoint.y);
-      this.setMode('COLOCANDO…');
-      this.wasPinching = true;
-      this.selectPinchWas = false;
+      this.updateGhost(pointer.indexTip.x, pointer.indexTip.y);
+      if (!anyPinch) this.setMode('POSICIONANDO');
     } else {
-      this.laser.classList.remove('visible');
-      this.updateHover(-1, -1);
-      if (this.wasPinching && this.ghostValid) this.placeBrick();
-      this.wasPinching = false;
       this.hideGhost();
-      if (!palm && !like) this.setMode(null);
+      if (!palm && !anyPinch && !triNow) this.setMode(null);
+    }
+
+    // --- Acciones con pinch (flanco de subida) ---
+    if (pinchRising) {
+      if (pointer && this.ghostValid) {
+        // Índice + pinch de la otra mano → colocar.
+        this.placeBrick();
+      } else if (!pointer) {
+        // Pinch sin índice → girar 90°.
+        this.rotated = !this.rotated;
+        this.rebuildGhost();
+        this.setMode('GIRADA 90°');
+      }
     }
   }
 
@@ -288,18 +352,13 @@ export class LegoApp implements MiniApp {
 
     const { w, l } = this.dims();
     const half = BASE / 2;
-    // Snap: celda de origen (esquina) limitada a la base.
     const cx = Math.round(hit.x / STUD - w / 2);
     const cz = Math.round(hit.z / STUD - l / 2);
     const clampedX = THREE.MathUtils.clamp(cx, -half, half - w);
     const clampedZ = THREE.MathUtils.clamp(cz, -half, half - l);
 
     const y = this.stackHeight(clampedX, clampedZ, w, l);
-    this.ghostPos.set(
-      (clampedX + w / 2) * STUD,
-      y,
-      (clampedZ + l / 2) * STUD,
-    );
+    this.ghostPos.set((clampedX + w / 2) * STUD, y, (clampedZ + l / 2) * STUD);
     this.ghost.position.copy(this.ghostPos);
     this.ghost.visible = true;
     this.ghostValid = true;
@@ -367,7 +426,8 @@ export class LegoApp implements MiniApp {
     let target: HTMLElement | null = null;
     if (sx >= 0) {
       const el = document.elementFromPoint(sx, sy) as HTMLElement | null;
-      target = el?.closest('.brick-item') ?? null;
+      target = (el?.closest('.brick-item') ??
+        el?.closest('.modal-close')) as HTMLElement | null;
     }
     if (target !== this.hoveredItem) {
       this.hoveredItem?.classList.remove('hovered');

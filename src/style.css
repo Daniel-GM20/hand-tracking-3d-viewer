@@ -410,19 +410,98 @@ body {
 }
 .eraser-cursor.visible { display: block; }
 
+/* Cursor de puntería: punto medio índice–pulgar con la mano abierta */
+.aim-cursor {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 29;
+  display: none;
+}
+.aim-cursor::before, .aim-cursor::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.55);
+}
+.aim-cursor::before { left: 50%; top: -5px; width: 1px; height: 6px; }
+.aim-cursor::after { left: 50%; bottom: -5px; width: 1px; height: 6px; }
+.aim-cursor .aim-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+.aim-cursor.visible { display: block; }
+
 /* ===== App: LEGO ===== */
-#brick-palette {
+/* Modal de selección de piezas (gesto tri-pinch) */
+#brick-modal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 45;
+  padding: 20px 22px;
+  width: min(92vw, 540px);
+  max-height: 76vh;
+  overflow-y: auto;
+  display: none;
+}
+#brick-modal.visible { display: block; animation: modalIn 0.16s ease; }
+@keyframes modalIn {
+  from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+#brick-modal h2 {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 14px;
+  text-align: center;
+}
+#brick-modal .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 10px;
+}
+#brick-modal .modal-close {
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+#brick-modal .modal-close.hovered { border-color: #fff; box-shadow: 0 0 14px rgba(255, 255, 255, 0.4); transform: scale(1.03); }
+
+#open-palette {
   position: absolute;
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 12;
-  display: flex;
-  gap: 10px;
-  padding: 12px 16px;
-  max-width: calc(100vw - 320px);
-  overflow-x: auto;
+  padding: 9px 20px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text);
+  cursor: pointer;
 }
+#open-palette:hover { border-color: rgba(110, 231, 255, 0.6); box-shadow: 0 0 14px rgba(110, 231, 255, 0.3); }
 .brick-item {
   min-width: 58px;
   padding: 8px 6px;
@@ -453,3 +532,71 @@ body {
 .gesture-help h2 { font-size: 11px; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
 .gesture-help div { font-size: 11px; letter-spacing: 0.5px; color: var(--text-dim); margin: 4px 0; line-height: 1.45; }
 .gesture-help b { color: var(--text); font-weight: 600; }
+.gesture-help.hidden { display: none; }
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  #menu {
+    justify-content: flex-start;
+    padding: 8vh 20px 32px;
+    gap: 28px;
+    overflow-y: auto;
+  }
+  #menu .hub-title h1 { font-size: 24px; letter-spacing: 6px; }
+  #menu .hub-title p { font-size: 11px; letter-spacing: 3px; }
+  #menu .cards { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; width: 100%; }
+  .card { padding: 20px 18px; }
+  .card-icon { width: 46px; height: 46px; font-size: 15px; margin-bottom: 12px; }
+
+  .gesture-help { max-width: 230px; padding: 10px 14px; }
+  #info-panel { width: min(300px, calc(100vw - 24px)); }
+}
+
+@media (max-width: 600px) {
+  /* Menú en una columna */
+  #menu .cards { grid-template-columns: 1fr; }
+  #menu .hub-title h1 { font-size: 19px; letter-spacing: 4px; }
+
+  #back-btn { top: 10px; padding: 7px 16px; font-size: 11px; }
+
+  /* HUD y paneles compactos */
+  .hud { left: 10px; top: 10px; max-width: calc(100vw - 20px); }
+  .hud .panel { min-width: 0; padding: 9px 12px; border-radius: 12px; }
+  .hud h1 { font-size: 10px; letter-spacing: 2px; margin-bottom: 6px; }
+  .hud .row { font-size: 10px; gap: 10px; margin: 3px 0; }
+  #explosion-label { font-size: 8px; }
+
+  /* Preview de cámara pequeño */
+  .video-preview {
+    width: 124px;
+    height: 93px;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 10px;
+  }
+
+  /* Instrucciones ocultas por defecto (doble like para mostrarlas) */
+  .gesture-help {
+    right: 10px;
+    top: auto;
+    bottom: 112px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .status-message { max-width: calc(100vw - 32px); padding: 14px 18px; font-size: 11px; }
+
+  /* Exploded */
+  #model-picker { left: 10px; bottom: 10px; right: 144px; flex-wrap: wrap; gap: 6px; }
+  #model-picker select, #model-picker button { font-size: 11px; padding: 7px 10px; }
+  #info-panel { right: 10px; top: 56px; width: calc(100vw - 20px); max-height: 40vh; overflow-y: auto; }
+
+  /* Pizarra: rueda más pequeña */
+  #color-wheel { transform: scale(0.82); }
+  #color-wheel.visible { animation: none; }
+
+  /* LEGO */
+  #open-palette { bottom: 10px; padding: 8px 14px; font-size: 10px; }
+  #brick-modal { padding: 14px; max-height: 66vh; }
+  #brick-modal .grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
+}

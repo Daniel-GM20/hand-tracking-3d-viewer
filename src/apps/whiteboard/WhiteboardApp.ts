@@ -35,16 +35,20 @@ const TEMPLATE = `
     </div>
   </div>
 
-  <div class="gesture-help glass">
+  <div id="wb-help" class="gesture-help glass">
     <h2>GESTOS</h2>
+    <div><b>Mano abierta</b>: el cursor marca dónde vas a pintar</div>
     <div><b>Pinch</b> (pulgar+índice): dibujar</div>
     <div><b>Pulgar+índice+medio juntos</b>: rueda de colores — mueve en círculo y <b>suelta</b> para elegir; suelta en el <b>centro</b> para cancelar</div>
     <div><b>Índice+medio</b> extendidos: borrador</div>
+    <div><b>Like con ambas manos</b>: mostrar/ocultar esta ayuda</div>
   </div>
 
   <div id="color-wheel" class="glass"></div>
   <div id="wb-draw-cursor" class="draw-cursor"></div>
   <div id="wb-eraser-cursor" class="eraser-cursor"></div>
+  <div id="wb-aim-0" class="aim-cursor"><div class="aim-dot"></div></div>
+  <div id="wb-aim-1" class="aim-cursor"><div class="aim-dot"></div></div>
   <div id="wb-status" class="status-message glass"></div>
 `;
 
@@ -81,6 +85,9 @@ export class WhiteboardApp implements MiniApp {
   private colorEl!: HTMLElement;
   private drawCursor!: HTMLElement;
   private eraserCursor!: HTMLElement;
+  private aimCursors: HTMLElement[] = [];
+  private helpEl!: HTMLElement;
+  private bothLikeWas = false;
 
   async mount(container: HTMLElement): Promise<void> {
     const root = document.createElement('div');
@@ -100,6 +107,13 @@ export class WhiteboardApp implements MiniApp {
     this.colorEl = document.getElementById('wb-color')!;
     this.drawCursor = document.getElementById('wb-draw-cursor')!;
     this.eraserCursor = document.getElementById('wb-eraser-cursor')!;
+    this.aimCursors = [
+      document.getElementById('wb-aim-0')!,
+      document.getElementById('wb-aim-1')!,
+    ];
+    this.helpEl = document.getElementById('wb-help')!;
+    // En pantallas pequeñas la ayuda inicia oculta (doble like la muestra).
+    if (window.innerWidth <= 600) this.helpEl.classList.add('hidden');
     this.colorEl.style.color = this.color;
 
     this.buildWheel();
@@ -240,6 +254,11 @@ export class WhiteboardApp implements MiniApp {
       y: p.y * window.innerHeight,
     });
 
+    // Like con ambas manos → mostrar/ocultar las instrucciones.
+    const bothLike = poses.length === 2 && poses.every((p) => p.like);
+    if (bothLike && !this.bothLikeWas) this.helpEl.classList.toggle('hidden');
+    this.bothLikeWas = bothLike;
+
     const tri = poses.find((p) => p.triPinch);
 
     // Rueda abierta: es modal, solo se atiende el gesto tri-pinch.
@@ -286,8 +305,14 @@ export class WhiteboardApp implements MiniApp {
       this.setMode('DIBUJANDO');
       this.lastErase = null;
     } else {
-      this.setCursors({});
-      this.setMode(null);
+      // Mano abierta: cursor de puntería en el punto medio índice–pulgar,
+      // exactamente donde empezará el trazo al juntar los dedos.
+      const aims = poses
+        .filter((p) => !p.like)
+        .slice(0, 2)
+        .map((p) => toScreen(p.pinchPoint));
+      this.setCursors({ aims });
+      this.setMode(aims.length > 0 ? 'LISTO' : null);
       this.lastDraw = null;
       this.lastErase = null;
     }
@@ -351,6 +376,7 @@ export class WhiteboardApp implements MiniApp {
   private setCursors(c: {
     draw?: { x: number; y: number };
     eraser?: { x: number; y: number };
+    aims?: Array<{ x: number; y: number }>;
   }): void {
     const place = (el: HTMLElement, pt?: { x: number; y: number }) => {
       el.classList.toggle('visible', !!pt);
@@ -361,6 +387,10 @@ export class WhiteboardApp implements MiniApp {
     };
     place(this.drawCursor, c.draw);
     place(this.eraserCursor, c.eraser);
+    this.aimCursors.forEach((el, i) => {
+      place(el, c.aims?.[i]);
+      el.style.color = this.color;
+    });
     if (c.draw) {
       this.drawCursor.style.background = this.color;
       this.drawCursor.style.color = this.color;
