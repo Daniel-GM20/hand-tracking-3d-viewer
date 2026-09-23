@@ -24,24 +24,28 @@ interface WheelSlot {
 
 const TEMPLATE = `
   <canvas id="draw-canvas"></canvas>
-  <canvas id="video-preview" class="video-preview" width="480" height="360"></canvas>
 
   <div class="hud">
     <div class="panel glass">
-      <h1>Whiteboard</h1>
       <div class="row"><span>Hands</span><span class="value" id="wb-hands">0</span></div>
-      <div class="row"><span>Mode</span><span class="value" id="wb-mode">—</span></div>
+      <div class="row"><span>Gesture</span><span class="value" id="wb-mode">—</span></div>
       <div class="row"><span>Color</span><span class="value" id="wb-color">■</span></div>
     </div>
   </div>
 
-  <div id="wb-help" class="gesture-help glass">
-    <h2>Gestures</h2>
-    <div><b>Open hand</b>: the cursor shows where you will draw</div>
-    <div><b>Pinch</b> (thumb and index): draw</div>
-    <div><b>Thumb, index, and middle together</b>: color wheel. Move in a circle and <b>release</b> to choose. Release in the <b>center</b> to cancel</div>
-    <div><b>Index and middle</b> extended: eraser</div>
-    <div><b>Like with both hands</b>: show or hide this help</div>
+  <aside class="side-stack">
+    <div id="wb-help" class="gesture-help glass">
+      <h2>Gestures</h2>
+      <div><b>Open hand</b>: the cursor shows where you will draw</div>
+      <div><b>Pinch</b> (thumb and index): draw</div>
+      <div><b>Thumb, index, and middle together</b>: color wheel. Move in a circle and <b>release</b> to choose. Release in the <b>center</b> to cancel</div>
+      <div><b>Index and middle</b> extended: eraser</div>
+      <div><b>Like with both hands</b>: show or hide this help</div>
+    </div>
+  </aside>
+
+  <div class="app-dock">
+    <canvas id="video-preview" class="video-preview" width="480" height="360"></canvas>
   </div>
 
   <div id="color-wheel" class="glass"></div>

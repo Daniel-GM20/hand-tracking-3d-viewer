@@ -19,12 +19,28 @@
   </head>
   <body>
     <div id="menu"></div>
-    <button id="back-btn" hidden>
-      <svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true">
-        <path d="M8.2 1.4 1.8 8l6.4 6.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Back
-    </button>
+    <header id="app-bar" hidden>
+      <button id="back-btn" type="button">
+        <svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true">
+          <path d="M8.2 1.4 1.8 8l6.4 6.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back
+      </button>
+      <h1 id="app-title"></h1>
+      <button id="app-theme" type="button" class="theme-btn">
+        <svg class="theme-icon theme-icon-sun" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" fill="currentColor"/>
+          <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2.5v2.2M12 19.3v2.2M4.8 4.8l1.6 1.6M17.6 17.6l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.8 19.2l1.6-1.6M17.6 6.4l1.6-1.6"/>
+          </g>
+        </svg>
+        <svg class="theme-icon theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M14.5 2.4a9.2 9.2 0 1 0 7.1 14.4A8 8 0 0 1 14.5 2.4z"/>
+        </svg>
+        <span class="theme-label theme-label-light">Light</span>
+        <span class="theme-label theme-label-dark">Dark</span>
+      </button>
+    </header>
     <div id="app-container"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

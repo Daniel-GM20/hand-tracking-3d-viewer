@@ -22,11 +22,9 @@ const ROTATE_SENSITIVITY = 4.0;
 
 const TEMPLATE = `
   <canvas id="scene-canvas" class="scene"></canvas>
-  <canvas id="video-preview" class="video-preview" width="480" height="360"></canvas>
 
   <div id="hud" class="hud">
     <div class="panel glass">
-      <h1>Exploded View</h1>
       <div class="row"><span>Hands</span><span class="value" id="hud-hands">0</span></div>
       <div class="row"><span>Gesture</span><span class="value" id="hud-gesture">—</span></div>
       <div class="row"><span>Part</span><span class="value" id="hud-piece">—</span></div>
@@ -36,19 +34,32 @@ const TEMPLATE = `
     </div>
   </div>
 
-  <div id="model-picker">
-    <select id="model-select"></select>
-    <button id="load-file-btn">Open GLB…</button>
-    <input id="file-input" type="file" accept=".glb,.gltf" style="display:none" />
+  <aside class="side-stack">
+    <div id="ex-help" class="gesture-help glass">
+      <h2>Gestures</h2>
+      <div><b>Both hands pinch</b>: pull the model apart</div>
+      <div><b>One pinch</b>: rotate</div>
+      <div><b>Both open palms</b>: zoom</div>
+      <div><b>Point, then pinch the other hand</b>: select a part</div>
+      <div><b>Open palm</b> for 2 s: release the part</div>
+      <div><b>Like</b> for 2 s: show or hide part details</div>
+    </div>
+    <div id="info-panel" class="glass">
+      <h2 id="info-title">Part</h2>
+      <div id="info-body"></div>
+    </div>
+  </aside>
+
+  <div class="app-dock">
+    <div id="model-picker">
+      <select id="model-select"></select>
+      <button id="load-file-btn" type="button">Open GLB…</button>
+      <input id="file-input" type="file" accept=".glb,.gltf" style="display:none" />
+    </div>
+    <canvas id="video-preview" class="video-preview" width="480" height="360"></canvas>
   </div>
 
   <div id="laser-cursor" class="laser-cursor"></div>
-
-  <div id="info-panel" class="glass">
-    <h2 id="info-title">Part</h2>
-    <div id="info-body"></div>
-  </div>
-
   <div id="drop-overlay">Drop a GLB file</div>
   <div id="status-message" class="status-message glass"></div>
 `;
@@ -64,6 +75,7 @@ export class ExplodedApp implements MiniApp {
     root.className = 'miniapp';
     root.innerHTML = TEMPLATE;
     container.appendChild(root);
+    if (window.innerWidth <= 600) document.getElementById('ex-help')?.classList.add('hidden');
 
     const canvas = document.getElementById('scene-canvas') as HTMLCanvasElement;
     const previewCanvas = document.getElementById('video-preview') as HTMLCanvasElement;

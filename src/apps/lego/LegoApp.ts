@@ -26,11 +26,9 @@ interface PlacedBrick {
 
 const TEMPLATE = `
   <canvas id="lego-canvas" class="scene"></canvas>
-  <canvas id="video-preview" class="video-preview" width="480" height="360"></canvas>
 
   <div class="hud">
     <div class="panel glass">
-      <h1>Lego Lab <span style="font-size:11px;font-weight:600;color:var(--accent-warm)">Beta</span></h1>
       <div class="row"><span>Hands</span><span class="value" id="lg-hands">0</span></div>
       <div class="row"><span>Gesture</span><span class="value" id="lg-mode">—</span></div>
       <div class="row"><span>Piece</span><span class="value" id="lg-brick">—</span></div>
@@ -38,17 +36,22 @@ const TEMPLATE = `
     </div>
   </div>
 
-  <div id="lg-help" class="gesture-help glass">
-    <h2>Gestures</h2>
-    <div><b>Index extended</b>: move the ghost piece</div>
-    <div><b>Index plus a pinch on the other hand</b>: place the piece</div>
-    <div><b>Pinch without an index</b>: turn the piece 90°</div>
-    <div><b>Thumb, index, and middle together</b>: open or close the piece catalog</div>
-    <div><b>Open palm</b> for 1.5 s: undo</div>
-    <div><b>Like with both hands</b>: show or hide this help</div>
-  </div>
+  <aside class="side-stack">
+    <div id="lg-help" class="gesture-help glass">
+      <h2>Gestures</h2>
+      <div><b>Index extended</b>: move the ghost piece</div>
+      <div><b>Index plus a pinch on the other hand</b>: place the piece</div>
+      <div><b>Pinch without an index</b>: turn the piece 90°</div>
+      <div><b>Thumb, index, and middle together</b>: open or close the piece catalog</div>
+      <div><b>Open palm</b> for 1.5 s: undo</div>
+      <div><b>Like with both hands</b>: show or hide this help</div>
+    </div>
+  </aside>
 
-  <button id="open-palette" class="glass">Pieces</button>
+  <div class="app-dock">
+    <button id="open-palette" type="button" class="dock-btn">Pieces</button>
+    <canvas id="video-preview" class="video-preview" width="480" height="360"></canvas>
+  </div>
 
   <div id="brick-modal" class="glass">
     <h2>Piece catalog</h2>
