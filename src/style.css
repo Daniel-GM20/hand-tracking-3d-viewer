@@ -192,6 +192,7 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
+a.app-row { color: inherit; text-decoration: none; }
 .app-row {
   width: 100%;
   display: grid;

@@ -11,6 +11,7 @@ interface Space {
   blurb: string;
   meta: string;
   bot: BotAvatarType;
+  href?: string;
   disabled?: boolean;
 }
 
@@ -37,12 +38,12 @@ const SPACES: Space[] = [
     bot: 'square',
   },
   {
-    id: 'memes',
-    title: 'Meme Mirror',
-    blurb: 'Hold a pose and see which meme you match.',
-    meta: 'Coming soon',
-    bot: 'ghost',
-    disabled: true,
+    id: 'gamera',
+    title: 'GameRA',
+    blurb: 'Photograph real objects. The camera turns them into a level on your wall.',
+    meta: 'Camera · Play',
+    bot: 'alien',
+    href: 'https://gamera.vercel.app/',
   },
 ];
 
@@ -178,36 +179,50 @@ export function Hub({ onSelect }: { onSelect: (appId: string) => void }) {
 
         <h2 className="section-label">Spaces</h2>
         <div className="app-group">
-          {SPACES.map((space) => (
-            <button
-              key={space.id}
-              type="button"
-              className="app-row"
-              disabled={space.disabled}
-              onClick={() => onSelect(space.id)}
-            >
-              <span className="app-avatar">
-                <BotAvatar
-                  type={space.bot}
-                  size={48}
-                  theme={theme}
-                  state={space.disabled ? 'sleeping' : 'default'}
-                  face="eyes"
-                  interactive={false}
-                  turn={0.2}
-                  jumpEvery={0}
-                />
-              </span>
-              <span className="app-copy">
-                <span className="app-title-line">
-                  <span className="app-title">{space.title}</span>
-                  <span className="app-meta">{space.meta}</span>
+          {SPACES.map((space) => {
+            const body = (
+              <>
+                <span className="app-avatar">
+                  <BotAvatar
+                    type={space.bot}
+                    size={48}
+                    theme={theme}
+                    state={space.disabled ? 'sleeping' : 'default'}
+                    face="eyes"
+                    interactive={false}
+                    turn={0.2}
+                    jumpEvery={0}
+                  />
                 </span>
-                <span className="app-blurb">{space.blurb}</span>
-              </span>
-              {space.disabled ? <span className="chevron chevron-spacer" /> : <Chevron />}
-            </button>
-          ))}
+                <span className="app-copy">
+                  <span className="app-title-line">
+                    <span className="app-title">{space.title}</span>
+                    <span className="app-meta">{space.meta}</span>
+                  </span>
+                  <span className="app-blurb">{space.blurb}</span>
+                </span>
+                {space.disabled ? <span className="chevron chevron-spacer" /> : <Chevron />}
+              </>
+            );
+            if (space.href) {
+              return (
+                <a key={space.id} className="app-row" href={space.href}>
+                  {body}
+                </a>
+              );
+            }
+            return (
+              <button
+                key={space.id}
+                type="button"
+                className="app-row"
+                disabled={space.disabled}
+                onClick={() => onSelect(space.id)}
+              >
+                {body}
+              </button>
+            );
+          })}
         </div>
       </main>
     </div>
