@@ -98,16 +98,15 @@ body {
   margin-bottom: 4px;
 }
 
-.appearance { display: flex; }
 .appearance-liquid { font-size: 0; line-height: 0; }
-.seg {
+.theme-btn {
   appearance: none;
   height: 36px;
-  padding: 0 16px;
+  padding: 0 14px;
   border: 0;
   border-radius: 18px;
   background: transparent;
-  color: var(--label-2);
+  color: var(--label);
   font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   letter-spacing: -0.01em;
   display: inline-flex;
@@ -115,8 +114,9 @@ body {
   gap: 6px;
   cursor: pointer;
 }
-.seg[aria-pressed='true'] { color: var(--accent); }
-.seg:focus-visible {
+.theme-btn svg { color: var(--accent); }
+.theme-btn:active { opacity: 0.65; }
+.theme-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -655,7 +655,6 @@ body {
 @media (max-width: 640px) {
   .mast h1 { font-size: 28px; }
   .hero { flex-direction: column; align-items: flex-start; padding: 18px; }
-  .seg { padding: 0 12px; }
 }
 
 @media (max-width: 600px) {

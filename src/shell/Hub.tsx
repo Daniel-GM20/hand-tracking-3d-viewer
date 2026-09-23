@@ -90,44 +90,32 @@ function AppearanceControl({
   theme: Theme;
   onChange: (theme: Theme) => void;
 }) {
+  const next: Theme = theme === 'dark' ? 'light' : 'dark';
   const dark = theme === 'dark';
   return (
-    <div className="appearance" role="group" aria-label="Appearance">
-      <Liquid
-        className="appearance-liquid"
-        blur={8}
-        contrast={22}
-        fill={dark ? '#2c2c2e' : '#ffffff'}
-        shadow={
-          dark
-            ? '0 8px 22px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.1)'
-            : '0 8px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)'
-        }
-      >
-        <Liquid.Item>
-          <button
-            type="button"
-            className="seg"
-            aria-pressed={theme === 'light'}
-            onClick={() => onChange('light')}
-          >
-            <SunIcon />
-            Light
-          </button>
-        </Liquid.Item>
-        <Liquid.Item>
-          <button
-            type="button"
-            className="seg"
-            aria-pressed={theme === 'dark'}
-            onClick={() => onChange('dark')}
-          >
-            <MoonIcon />
-            Dark
-          </button>
-        </Liquid.Item>
-      </Liquid>
-    </div>
+    <Liquid
+      className="appearance-liquid"
+      blur={7}
+      contrast={20}
+      fill={dark ? '#2c2c2e' : '#ffffff'}
+      shadow={
+        dark
+          ? '0 8px 22px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.1)'
+          : '0 8px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)'
+      }
+    >
+      <Liquid.Item>
+        <button
+          type="button"
+          className="theme-btn"
+          aria-label={next === 'dark' ? 'Switch to dark appearance' : 'Switch to light appearance'}
+          onClick={() => onChange(next)}
+        >
+          {next === 'dark' ? <MoonIcon /> : <SunIcon />}
+          {next === 'dark' ? 'Dark' : 'Light'}
+        </button>
+      </Liquid.Item>
+    </Liquid>
   );
 }
 
