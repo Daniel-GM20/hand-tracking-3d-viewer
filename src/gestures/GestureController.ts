@@ -159,7 +159,7 @@ export class GestureController implements Gesture {
           this.explodeStartFactor + (d - this.explodeStartDist) * this.explodeSensitivity;
         this.explodeFactor = Math.min(1, Math.max(0, target));
         this.cb.onExplode(this.explodeFactor);
-        this.cb.onGesture('EXPLOSIÓN');
+        this.cb.onGesture('Explode');
         break;
       }
       case 'rotate': {
@@ -172,14 +172,14 @@ export class GestureController implements Gesture {
           this.cb.onRotateDelta(dx, dy);
         }
         this.rotatePrev = pt;
-        this.cb.onGesture(selected ? 'ROTAR PIEZA' : 'ROTAR');
+        this.cb.onGesture(selected ? 'Rotate part' : 'Rotate');
         break;
       }
       case 'zoom': {
         const d = dist2D(poses[0].palmCenter, poses[1].palmCenter);
         const mult = 1 + (d - this.zoomStartDist) * this.zoomSensitivity;
         this.cb.onZoom(Math.max(0.05, mult));
-        this.cb.onGesture(selected ? 'ZOOM PIEZA' : 'ZOOM');
+        this.cb.onGesture(selected ? 'Zoom part' : 'Zoom');
         break;
       }
       case 'point': {
@@ -191,7 +191,7 @@ export class GestureController implements Gesture {
         const otherPinch = other?.pinch ?? false;
         if (otherPinch && !this.selectPinchWas) this.cb.onSelect();
         this.selectPinchWas = otherPinch;
-        this.cb.onGesture('APUNTANDO');
+        this.cb.onGesture('Pointing');
         break;
       }
       case 'palmHold': {
@@ -201,7 +201,7 @@ export class GestureController implements Gesture {
           this.cb.onGesture(null);
           this.mode = 'none';
         } else {
-          this.cb.onGesture(`SOLTAR PIEZA ${Math.round((elapsed / HOLD_MS) * 100)}%`);
+          this.cb.onGesture(`Release ${Math.round((elapsed / HOLD_MS) * 100)}%`);
         }
         break;
       }

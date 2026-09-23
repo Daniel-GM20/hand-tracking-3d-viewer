@@ -13,7 +13,7 @@ export class InfoPanel {
   visible = false;
 
   show(mesh: THREE.Mesh): void {
-    this.titleEl.textContent = (mesh.name || 'PIEZA SIN NOMBRE').toUpperCase();
+    this.titleEl.textContent = mesh.name || 'Unnamed part';
     this.bodyEl.innerHTML = '';
 
     // 'name' se omite: duplica el título (lo agrega el pipeline glTF).
@@ -26,7 +26,7 @@ export class InfoPanel {
     if (entries.length === 0) {
       const msg = document.createElement('div');
       msg.className = 'info-empty';
-      msg.textContent = 'INFORMACIÓN NO DISPONIBLE';
+      msg.textContent = 'No information';
       this.bodyEl.appendChild(msg);
     } else {
       for (const [key, value] of entries) {
@@ -34,7 +34,7 @@ export class InfoPanel {
         row.className = 'info-row';
         const k = document.createElement('span');
         k.className = 'info-key';
-        k.textContent = key.toUpperCase();
+        k.textContent = key;
         const v = document.createElement('span');
         v.className = 'info-value';
         v.textContent = String(value);

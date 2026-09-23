@@ -30,30 +30,30 @@ const TEMPLATE = `
 
   <div class="hud">
     <div class="panel glass">
-      <h1>LEGO LAB <span style="font-size:9px;color:#ffc14d">BETA</span></h1>
-      <div class="row"><span>MANOS</span><span class="value" id="lg-hands">0</span></div>
-      <div class="row"><span>GESTO</span><span class="value" id="lg-mode">—</span></div>
-      <div class="row"><span>PIEZA</span><span class="value" id="lg-brick">—</span></div>
-      <div class="row"><span>COLOCADAS</span><span class="value" id="lg-count">0</span></div>
+      <h1>Lego Lab <span style="font-size:11px;font-weight:600;color:var(--accent-warm)">Beta</span></h1>
+      <div class="row"><span>Hands</span><span class="value" id="lg-hands">0</span></div>
+      <div class="row"><span>Gesture</span><span class="value" id="lg-mode">—</span></div>
+      <div class="row"><span>Piece</span><span class="value" id="lg-brick">—</span></div>
+      <div class="row"><span>Placed</span><span class="value" id="lg-count">0</span></div>
     </div>
   </div>
 
   <div id="lg-help" class="gesture-help glass">
-    <h2>GESTOS</h2>
-    <div><b>Índice extendido</b>: posicionar la pieza fantasma</div>
-    <div><b>Índice + pinch de la otra mano</b>: colocar la pieza</div>
-    <div><b>Pinch sin índice</b>: girar la pieza 90°</div>
-    <div><b>Pulgar+índice+medio juntos</b>: abrir/cerrar el catálogo de piezas</div>
-    <div><b>Palma abierta</b> 1.5 s: deshacer</div>
-    <div><b>Like con ambas manos</b>: mostrar/ocultar esta ayuda</div>
+    <h2>Gestures</h2>
+    <div><b>Index extended</b>: move the ghost piece</div>
+    <div><b>Index plus a pinch on the other hand</b>: place the piece</div>
+    <div><b>Pinch without an index</b>: turn the piece 90°</div>
+    <div><b>Thumb, index, and middle together</b>: open or close the piece catalog</div>
+    <div><b>Open palm</b> for 1.5 s: undo</div>
+    <div><b>Like with both hands</b>: show or hide this help</div>
   </div>
 
-  <button id="open-palette" class="glass">PIEZAS ▤</button>
+  <button id="open-palette" class="glass">Pieces</button>
 
   <div id="brick-modal" class="glass">
-    <h2>CATÁLOGO DE PIEZAS</h2>
+    <h2>Piece catalog</h2>
     <div class="grid"></div>
-    <div class="modal-close" data-action="close">CERRAR ✕</div>
+    <div class="modal-close" data-action="close">Close</div>
   </div>
 
   <div id="lg-laser" class="laser-cursor"></div>
@@ -157,14 +157,14 @@ export class LegoApp implements MiniApp {
     });
 
     const status = document.getElementById('lg-status')!;
-    status.textContent = 'INICIANDO CÁMARA…';
+    status.textContent = 'Starting the camera…';
     status.classList.add('visible');
     try {
       await tracker.start();
       status.classList.remove('visible');
     } catch (err) {
       console.error(err);
-      status.textContent = 'CÁMARA NO DISPONIBLE — CONCEDE PERMISO Y RECARGA.';
+      status.textContent = 'Camera unavailable. Allow camera access and reload.';
     }
   }
 
@@ -218,7 +218,7 @@ export class LegoApp implements MiniApp {
   private setBrick(def: BrickDef): void {
     this.currentDef = def;
     this.rotated = false;
-    this.brickEl.textContent = `${def.kind === 'plate' ? 'PLACA' : 'LADRILLO'} ${def.label}`;
+    this.brickEl.textContent = `${def.kind === 'plate' ? 'Plate' : 'Brick'} ${def.label}`;
     document.querySelectorAll('#brick-modal .brick-item').forEach((el) => {
       el.classList.toggle('selected', (el as HTMLElement).dataset.brick === def.id);
     });
@@ -292,7 +292,7 @@ export class LegoApp implements MiniApp {
           }
         }
       }
-      this.setMode('CATÁLOGO');
+      this.setMode('Catalog');
       this.hideGhost();
       this.palmStart = 0;
       return;
@@ -308,7 +308,7 @@ export class LegoApp implements MiniApp {
         this.undo();
       }
       if (!this.undoFired) {
-        this.setMode(`DESHACER ${Math.round((elapsed / UNDO_HOLD_MS) * 100)}%`);
+        this.setMode(`Undo ${Math.round((elapsed / UNDO_HOLD_MS) * 100)}%`);
       }
     } else {
       this.palmStart = 0;
@@ -318,7 +318,7 @@ export class LegoApp implements MiniApp {
     // --- Posicionar con el índice ---
     if (pointer) {
       this.updateGhost(pointer.indexTip.x, pointer.indexTip.y);
-      if (!anyPinch) this.setMode('POSICIONANDO');
+      if (!anyPinch) this.setMode('Moving');
     } else {
       this.hideGhost();
       if (!palm && !anyPinch && !triNow) this.setMode(null);
@@ -333,7 +333,7 @@ export class LegoApp implements MiniApp {
         // Pinch sin índice → girar 90°.
         this.rotated = !this.rotated;
         this.rebuildGhost();
-        this.setMode('GIRADA 90°');
+        this.setMode('Turned 90°');
       }
     }
   }
@@ -404,7 +404,7 @@ export class LegoApp implements MiniApp {
     this.sceneManager.scene.add(group);
     this.placed.push({ group, cells, prevHeights });
     this.countEl.textContent = String(this.placed.length);
-    this.setMode('COLOCADA ✓');
+    this.setMode('Placed');
   }
 
   private undo(): void {
@@ -417,7 +417,7 @@ export class LegoApp implements MiniApp {
       else this.heights.set(c, h);
     }
     this.countEl.textContent = String(this.placed.length);
-    this.setMode('DESHECHO');
+    this.setMode('Undone');
   }
 
   // --- UI ---

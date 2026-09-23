@@ -1,18 +1,30 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>J.A.R.V.I.S // HUB</title>
+    <title>Jarvis</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('jarvis-theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.dataset.theme = t;
+          document.documentElement.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
-    <div id="bg-blobs">
-      <div class="blob b1"></div>
-      <div class="blob b2"></div>
-      <div class="blob b3"></div>
-    </div>
     <div id="menu"></div>
-    <button id="back-btn" class="glass" hidden>◂ MENÚ</button>
+    <button id="back-btn" hidden>
+      <svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true">
+        <path d="M8.2 1.4 1.8 8l6.4 6.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </button>
     <div id="app-container"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

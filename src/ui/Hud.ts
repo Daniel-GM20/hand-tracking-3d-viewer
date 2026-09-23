@@ -18,12 +18,12 @@ export class Hud {
   }
 
   setPiece(name: string | null): void {
-    this.pieceEl.textContent = name ? name.toUpperCase() : '—';
+    this.pieceEl.textContent = name ?? '—';
     this.pieceEl.className = name ? 'value ok' : 'value';
   }
 
   setModelName(name: string): void {
-    this.modelEl.textContent = name.toUpperCase();
+    this.modelEl.textContent = name;
   }
 
   setExplosion(factor: number): void {

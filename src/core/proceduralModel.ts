@@ -26,36 +26,36 @@ export function createProceduralDrone(): THREE.Group {
   // Cuerpo central
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 1.0, 8, 24), hull);
   body.rotation.z = Math.PI / 2;
-  body.name = 'Fuselaje central';
+  body.name = 'Central fuselage';
   body.userData = {
-    componente: 'Fuselaje',
-    material: 'Aleación de titanio',
-    función: 'Chasis principal y soporte estructural',
-    peso: '4.2 kg',
+    component: 'Fuselage',
+    material: 'Titanium alloy',
+    role: 'Main chassis and structure',
+    weight: '4.2 kg',
   };
   group.add(body);
 
   // Cabina
   const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 16), accent);
   cockpit.position.set(0.75, 0.18, 0);
-  cockpit.name = 'Cúpula de sensores';
+  cockpit.name = 'Sensor dome';
   cockpit.userData = {
-    componente: 'Cúpula frontal',
-    material: 'Policarbonato blindado',
-    función: 'Alojamiento de cámara y LIDAR',
-    peso: '0.8 kg',
+    component: 'Front dome',
+    material: 'Armored polycarbonate',
+    role: 'Camera and LIDAR housing',
+    weight: '0.8 kg',
   };
   group.add(cockpit);
 
   // Anillo central
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.07, 12, 40), accent);
   ring.rotation.y = Math.PI / 2;
-  ring.name = 'Anillo estabilizador';
+  ring.name = 'Stabilizer ring';
   ring.userData = {
-    componente: 'Anillo giroscópico',
-    material: 'Fibra de carbono',
-    función: 'Estabilización inercial de vuelo',
-    peso: '0.6 kg',
+    component: 'Gyro ring',
+    material: 'Carbon fiber',
+    role: 'Inertial flight stabilization',
+    weight: '0.6 kg',
   };
   group.add(ring);
 
@@ -74,11 +74,11 @@ export function createProceduralDrone(): THREE.Group {
     arm.rotation.z = Math.PI / 2;
     arm.rotation.y = Math.atan2(z, x) + Math.PI / 2;
     arm.rotation.x = Math.PI / 2;
-    arm.name = `Brazo ${n}`;
+    arm.name = `Arm ${n}`;
     arm.userData = {
-      componente: `Brazo soporte ${n}`,
-      material: 'Aluminio 7075',
-      función: 'Unión fuselaje–motor',
+      component: `Support arm ${n}`,
+      material: 'Aluminum 7075',
+      role: 'Fuselage to motor link',
     };
     group.add(arm);
 
@@ -86,22 +86,22 @@ export function createProceduralDrone(): THREE.Group {
     motor.position.set(x, 0.1, z);
     motor.name = `Motor ${n}`;
     motor.userData = {
-      componente: `Motor brushless ${n}`,
-      potencia: '920 KV / 380 W',
-      función: 'Propulsión y sustentación',
-      peso: '0.3 kg',
+      component: `Brushless motor ${n}`,
+      power: '920 KV / 380 W',
+      role: 'Thrust and lift',
+      weight: '0.3 kg',
     };
     group.add(motor);
 
     const prop = new THREE.Mesh(propGeo, warm);
     prop.position.set(x, 0.28, z);
     prop.rotation.y = Math.atan2(z, x);
-    prop.name = `Hélice ${n}`;
+    prop.name = `Propeller ${n}`;
     prop.userData = {
-      componente: `Hélice ${n}`,
-      material: 'Nylon reforzado',
-      diámetro: '21 cm',
-      función: 'Generación de empuje',
+      component: `Propeller ${n}`,
+      material: 'Reinforced nylon',
+      diameter: '21 cm',
+      role: 'Thrust',
     };
     group.add(prop);
   }
@@ -113,28 +113,28 @@ export function createProceduralDrone(): THREE.Group {
     l++;
     const leg = new THREE.Mesh(legGeo, dark);
     leg.position.set(x, -0.55, z);
-    leg.name = `Pata de aterrizaje ${l}`;
+    leg.name = `Landing leg ${l}`;
     group.add(leg);
   }
 
   // Sensores / antenas
   const antenna = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.4, 8), warm);
   antenna.position.set(-0.6, 0.45, 0);
-  antenna.name = 'Antena de comunicaciones';
+  antenna.name = 'Comms antenna';
   antenna.userData = {
-    componente: 'Antena RF',
-    banda: '2.4 / 5.8 GHz',
-    función: 'Telemetría y control remoto',
+    component: 'RF antenna',
+    band: '2.4 / 5.8 GHz',
+    role: 'Telemetry and remote control',
   };
   group.add(antenna);
 
   const sensor = new THREE.Mesh(new THREE.OctahedronGeometry(0.14), accent);
   sensor.position.set(0, -0.5, 0);
-  sensor.name = 'Sensor ventral';
+  sensor.name = 'Belly sensor';
   sensor.userData = {
-    componente: 'Módulo de sensores',
-    tipo: 'Ultrasónico + flujo óptico',
-    función: 'Altitud y posicionamiento',
+    component: 'Sensor module',
+    type: 'Ultrasonic and optical flow',
+    role: 'Altitude and position',
   };
   group.add(sensor);
 
@@ -145,11 +145,11 @@ export function createProceduralDrone(): THREE.Group {
     s++;
     const plate = new THREE.Mesh(plateGeo, hull);
     plate.position.set(-0.15, 0.1, side * 0.5);
-    plate.name = `Placa lateral ${s}`;
+    plate.name = `Side plate ${s}`;
     plate.userData = {
-      componente: `Blindaje lateral ${s}`,
-      material: 'Compuesto de kevlar',
-      función: 'Protección de electrónica interna',
+      component: `Side armor ${s}`,
+      material: 'Kevlar composite',
+      role: 'Protects the internal electronics',
     };
     group.add(plate);
   }

@@ -28,20 +28,20 @@ const TEMPLATE = `
 
   <div class="hud">
     <div class="panel glass">
-      <h1>PIZARRA</h1>
-      <div class="row"><span>MANOS</span><span class="value" id="wb-hands">0</span></div>
-      <div class="row"><span>MODO</span><span class="value" id="wb-mode">—</span></div>
-      <div class="row"><span>COLOR</span><span class="value" id="wb-color">■</span></div>
+      <h1>Whiteboard</h1>
+      <div class="row"><span>Hands</span><span class="value" id="wb-hands">0</span></div>
+      <div class="row"><span>Mode</span><span class="value" id="wb-mode">—</span></div>
+      <div class="row"><span>Color</span><span class="value" id="wb-color">■</span></div>
     </div>
   </div>
 
   <div id="wb-help" class="gesture-help glass">
-    <h2>GESTOS</h2>
-    <div><b>Mano abierta</b>: el cursor marca dónde vas a pintar</div>
-    <div><b>Pinch</b> (pulgar+índice): dibujar</div>
-    <div><b>Pulgar+índice+medio juntos</b>: rueda de colores — mueve en círculo y <b>suelta</b> para elegir; suelta en el <b>centro</b> para cancelar</div>
-    <div><b>Índice+medio</b> extendidos: borrador</div>
-    <div><b>Like con ambas manos</b>: mostrar/ocultar esta ayuda</div>
+    <h2>Gestures</h2>
+    <div><b>Open hand</b>: the cursor shows where you will draw</div>
+    <div><b>Pinch</b> (thumb and index): draw</div>
+    <div><b>Thumb, index, and middle together</b>: color wheel. Move in a circle and <b>release</b> to choose. Release in the <b>center</b> to cancel</div>
+    <div><b>Index and middle</b> extended: eraser</div>
+    <div><b>Like with both hands</b>: show or hide this help</div>
   </div>
 
   <div id="color-wheel" class="glass"></div>
@@ -131,14 +131,14 @@ export class WhiteboardApp implements MiniApp {
     });
 
     const status = document.getElementById('wb-status')!;
-    status.textContent = 'INICIANDO CÁMARA…';
+    status.textContent = 'Starting the camera…';
     status.classList.add('visible');
     try {
       await tracker.start();
       status.classList.remove('visible');
     } catch (err) {
       console.error(err);
-      status.textContent = 'CÁMARA NO DISPONIBLE — CONCEDE PERMISO Y RECARGA.';
+      status.textContent = 'Camera unavailable. Allow camera access and reload.';
     }
   }
 
@@ -155,11 +155,12 @@ export class WhiteboardApp implements MiniApp {
 
     this.wheelCenterEl = document.createElement('div');
     this.wheelCenterEl.className = 'wheel-center';
-    this.wheelCenterEl.textContent = 'CANCELAR';
+    this.wheelCenterEl.textContent = 'Cancel';
     this.wheelEl.appendChild(this.wheelCenterEl);
 
+    const ink = document.documentElement.dataset.theme === 'light' ? '#1c1c1e' : '#ffffff';
     const defs: Array<{ color?: string; action?: 'clear' }> = [
-      ...COLORS.map((c) => ({ color: c })),
+      ...COLORS.map((c) => ({ color: c === '#ffffff' ? ink : c })),
       { action: 'clear' as const },
     ];
     const n = defs.length;
@@ -219,12 +220,12 @@ export class WhiteboardApp implements MiniApp {
       this.wheelHighlight !== null ? this.wheelSlots[this.wheelHighlight] : null;
     if (slot?.color) {
       this.setColor(slot.color);
-      this.setMode('COLOR ✓');
+      this.setMode('Color set');
     } else if (slot?.action === 'clear') {
       this.clearCanvas();
-      this.setMode('PIZARRA LIMPIA');
+      this.setMode('Board cleared');
     } else {
-      this.setMode('CANCELADO');
+      this.setMode('Canceled');
     }
     this.wheelEl.classList.remove('visible');
     this.wheelOpen = false;
@@ -265,7 +266,7 @@ export class WhiteboardApp implements MiniApp {
     if (this.wheelOpen) {
       if (tri) {
         this.updateWheel(toScreen(tri.triPoint));
-        this.setMode('RUEDA DE COLOR');
+        this.setMode('Color wheel');
       } else {
         this.closeWheel(poses.some((p) => p.pinch));
       }
@@ -274,7 +275,7 @@ export class WhiteboardApp implements MiniApp {
 
     if (tri) {
       this.openWheel(toScreen(tri.triPoint));
-      this.setMode('RUEDA DE COLOR');
+      this.setMode('Color wheel');
       return;
     }
 
@@ -296,13 +297,13 @@ export class WhiteboardApp implements MiniApp {
       });
       this.eraseAt(mid);
       this.setCursors({ eraser: mid });
-      this.setMode('BORRANDO');
+      this.setMode('Erasing');
       this.lastDraw = null;
     } else if (pincher) {
       const pt = toScreen(pincher.pinchPoint);
       this.drawAt(pt);
       this.setCursors({ draw: pt });
-      this.setMode('DIBUJANDO');
+      this.setMode('Drawing');
       this.lastErase = null;
     } else {
       // Mano abierta: cursor de puntería en el punto medio índice–pulgar,
@@ -312,7 +313,7 @@ export class WhiteboardApp implements MiniApp {
         .slice(0, 2)
         .map((p) => toScreen(p.pinchPoint));
       this.setCursors({ aims });
-      this.setMode(aims.length > 0 ? 'LISTO' : null);
+      this.setMode(aims.length > 0 ? 'Ready' : null);
       this.lastDraw = null;
       this.lastErase = null;
     }

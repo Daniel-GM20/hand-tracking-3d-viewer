@@ -24,7 +24,7 @@ export class ModelPicker {
     for (const s of samples) {
       const opt = document.createElement('option');
       opt.value = s.url;
-      opt.textContent = s.name.toUpperCase();
+      opt.textContent = s.name;
       this.select.appendChild(opt);
     }
 
@@ -79,7 +79,7 @@ export class ModelPicker {
       custom.value = '__custom__';
       this.select.appendChild(custom);
     }
-    custom.textContent = name.toUpperCase();
+    custom.textContent = name;
     this.select.value = '__custom__';
   }
 }

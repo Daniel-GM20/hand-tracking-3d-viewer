@@ -13,7 +13,7 @@ import { InfoPanel } from '../../ui/InfoPanel';
 import { ModelPicker, type SampleModel } from '../../ui/ModelPicker';
 
 const SAMPLES: SampleModel[] = [
-  { name: 'Dron (procedural)', url: 'procedural' },
+  { name: 'Drone (procedural)', url: 'procedural' },
   { name: 'Buggy', url: '/models/Buggy.glb' },
   { name: 'Gearbox', url: '/models/GearboxAssy.glb' },
 ];
@@ -26,30 +26,30 @@ const TEMPLATE = `
 
   <div id="hud" class="hud">
     <div class="panel glass">
-      <h1>EXPLODED VIEW</h1>
-      <div class="row"><span>MANOS</span><span class="value" id="hud-hands">0</span></div>
-      <div class="row"><span>GESTO</span><span class="value" id="hud-gesture">—</span></div>
-      <div class="row"><span>PIEZA</span><span class="value" id="hud-piece">—</span></div>
-      <div class="row"><span>MODELO</span><span class="value" id="hud-model">—</span></div>
+      <h1>Exploded View</h1>
+      <div class="row"><span>Hands</span><span class="value" id="hud-hands">0</span></div>
+      <div class="row"><span>Gesture</span><span class="value" id="hud-gesture">—</span></div>
+      <div class="row"><span>Part</span><span class="value" id="hud-piece">—</span></div>
+      <div class="row"><span>Model</span><span class="value" id="hud-model">—</span></div>
       <div id="explosion-bar"><div id="explosion-fill"></div></div>
-      <div id="explosion-label">NIVEL DE EXPLOSIÓN</div>
+      <div id="explosion-label">Explosion</div>
     </div>
   </div>
 
   <div id="model-picker">
     <select id="model-select"></select>
-    <button id="load-file-btn">CARGAR GLB…</button>
+    <button id="load-file-btn">Open GLB…</button>
     <input id="file-input" type="file" accept=".glb,.gltf" style="display:none" />
   </div>
 
   <div id="laser-cursor" class="laser-cursor"></div>
 
   <div id="info-panel" class="glass">
-    <h2 id="info-title">PIEZA</h2>
+    <h2 id="info-title">Part</h2>
     <div id="info-body"></div>
   </div>
 
-  <div id="drop-overlay">SUELTA EL ARCHIVO GLB</div>
+  <div id="drop-overlay">Drop a GLB file</div>
   <div id="status-message" class="status-message glass"></div>
 `;
 
@@ -100,16 +100,16 @@ export class ExplodedApp implements MiniApp {
         resetView();
       } catch (err) {
         console.error(err);
-        hud.showStatus(`ERROR CARGANDO ${sample.name.toUpperCase()} — USANDO DRON PROCEDURAL`);
+        hud.showStatus(`Could not load ${sample.name}. Showing the procedural drone.`);
         model.setModel(createProceduralDrone());
-        hud.setModelName('Dron (procedural)');
+        hud.setModelName('Drone (procedural)');
         resetView();
         setTimeout(() => hud.hideStatus(), 2500);
       }
     }
 
     async function loadFile(file: File): Promise<void> {
-      hud.showStatus(`CARGANDO ${file.name.toUpperCase()}…`);
+      hud.showStatus(`Loading ${file.name}…`);
       selector.deselect();
       try {
         await model.loadFile(file);
@@ -119,7 +119,7 @@ export class ExplodedApp implements MiniApp {
         resetView();
       } catch (err) {
         console.error(err);
-        hud.showStatus('ERROR: ARCHIVO GLB NO VÁLIDO');
+        hud.showStatus('That GLB file could not be read.');
         setTimeout(() => hud.hideStatus(), 2500);
       }
     }
@@ -173,7 +173,7 @@ export class ExplodedApp implements MiniApp {
       },
       onSelect: () => {
         const piece = selector.select();
-        if (piece) hud.setPiece(piece.name || 'pieza sin nombre');
+        if (piece) hud.setPiece(piece.name || 'Unnamed part');
       },
       onDeselect: () => {
         selector.deselect();
@@ -186,7 +186,7 @@ export class ExplodedApp implements MiniApp {
       onGesture: (label) => {
         hud.setGesture(label);
         const manipulating =
-          label !== null && label !== 'APUNTANDO' && !label.includes('%');
+          label !== null && label !== 'Pointing' && !label.includes('%');
         sceneManager.controls.enabled = !manipulating;
       },
     });
@@ -211,14 +211,14 @@ export class ExplodedApp implements MiniApp {
 
     await loadSample(SAMPLES[0]);
 
-    hud.showStatus('INICIANDO CÁMARA Y MODELO DE MANOS…');
+    hud.showStatus('Starting the camera and hand model…');
     try {
       await tracker.start();
       hud.hideStatus();
     } catch (err) {
       console.error(err);
       hud.showStatus(
-        'CÁMARA NO DISPONIBLE — CONCEDE PERMISO Y RECARGA. PUEDES USAR EL RATÓN (ORBIT) MIENTRAS TANTO.',
+        'Camera unavailable. Allow camera access and reload. You can orbit with the mouse until then.',
       );
     }
   }

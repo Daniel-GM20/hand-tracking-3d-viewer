@@ -1,5 +1,5 @@
 import './style.css';
-import { Menu } from './shell/Menu';
+import { mountHub } from './shell/mountHub';
 import type { MiniApp } from './shell/MiniApp';
 import { ExplodedApp } from './apps/exploded/ExplodedApp';
 import { WhiteboardApp } from './apps/whiteboard/WhiteboardApp';
@@ -34,7 +34,7 @@ function closeApp(): void {
   menu.show();
 }
 
-const menu = new Menu(openApp);
+const menu = mountHub(openApp);
 backBtn.addEventListener('click', closeApp);
 
 // Hook de debug para pruebas: __hub.openApp('whiteboard'), __hub.current()
